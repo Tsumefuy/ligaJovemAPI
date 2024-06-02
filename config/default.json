@@ -1,8 +1,0 @@
-{
-    "dbConfig": {
-        "host": "phoenix-storage-rquadros048.e.aivencloud.com",
-        "user": "avnadmin",
-        "password": "AVNS_GXxGT6GxHdYfhSbJEuw",
-        "database": "defaultdb"
-    }
-}
