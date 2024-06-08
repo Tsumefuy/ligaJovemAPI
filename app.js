@@ -19,6 +19,8 @@ var io = require('socket.io')(server, {
   }
 });
 
+var serverPort = 3001;
+
 var user_socket_connect_list = [];
 
 // view engine setup
@@ -65,9 +67,9 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-server.listen(3000);
+server.listen(serverPort);
 
-console.log("Server listen in 3000 port")
+console.log("Server listening in" + serverPort  + "port")
 
 Array.prototype.swap = (x,y) => {
   var b = this[x];

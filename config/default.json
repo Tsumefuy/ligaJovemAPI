@@ -1,0 +1,10 @@
+{
+    "dbConfig": {
+        "host": "phoenix-storage-rquadros048.e.aivencloud.com",
+        "user": "avnadmin",
+        "password": "AVNS_GXxGT6GxHdYfhSbJEuw",
+        "database": "defaultdb",
+        "timezone": "utc+3:00",
+        "charset": "utf8mb4"
+    }
+}
