@@ -1,9 +1,9 @@
+require('dotenv').config({path:'.env'});
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
 const cors = require('cors');
 var  fs = require('fs');
 
@@ -19,7 +19,7 @@ var io = require('socket.io')(server, {
   }
 });
 
-var serverPort = 3001;
+var serverPort = 3306;
 
 var user_socket_connect_list = [];
 
@@ -69,7 +69,7 @@ module.exports = app;
 
 server.listen(serverPort);
 
-console.log("Server listening in" + serverPort  + "port")
+console.log("Servidor ouvindo na porta " + serverPort)
 
 Array.prototype.swap = (x,y) => {
   var b = this[x];

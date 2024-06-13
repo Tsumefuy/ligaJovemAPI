@@ -1,3 +1,4 @@
 ca.pem
 node_modules
 .env
+crash_logs

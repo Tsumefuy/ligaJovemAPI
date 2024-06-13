@@ -2,7 +2,7 @@ var moment = require('moment-timezone');
 var fs = require('fs');
 
 const app_debug_mode = false;
-const timezone_name= "Brazil";
+const timezone_name= "America/Bahia";
 const msg_server_internal_error = "Server Internal Error";
 
 module.exports = {
