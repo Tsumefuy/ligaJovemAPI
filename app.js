@@ -19,7 +19,7 @@ var io = require('socket.io')(server, {
   }
 });
 
-var serverPort = process.env.PORT || 3001;
+var serverPort = 9001 || 3001;
 
 var user_socket_connect_list = [];
 
