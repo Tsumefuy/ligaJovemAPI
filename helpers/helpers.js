@@ -1,5 +1,5 @@
-var moment = require('moment-timezone');
-var fs = require('fs');
+const moment = require('moment-timezone');
+const fs = require('fs');
 
 const app_debug_mode = false;
 const timezone_name= "America/Bahia";

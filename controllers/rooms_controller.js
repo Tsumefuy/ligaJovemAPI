@@ -1,6 +1,5 @@
 var db = require('../helpers/db_helpers');
 var helper = require('../helpers/helpers');
-var multiparty = require('multiparty');
 
 module.exports.controller = (app, io, socket_list) => {
 
@@ -21,7 +20,6 @@ module.exports.controller = (app, io, socket_list) => {
     })
 
     app.get('/api/rooms/:id', async (req, res) => {
-        let json = {error:'', result:[]};
 
         let stts = 200;
 
