@@ -1,17 +1,18 @@
 var db = require('../helpers/db_helpers');
 var helper = require('../helpers/helpers');
+var authController = require('./auth_controller.js');
 
 module.exports.controller = (app, io, socket_list) => {
 
-    app.get('/api/rooms', async (req,res) => {
+    app.get('/api/rooms', authController.verifyJWT, async (req,res) => {
         let rooms = await getAllRooms();
         res.json(rooms);
     })
 
-    app.get('/api/rooms/:id', async (req, res) => {
+    app.get('/api/rooms/:id', authController.verifyJWT, async (req, res) => {
         let room = await getRoom(req.params.id);  
         if (room) {
-            res.json(room);
+            res.json(room);s
         } else {
             res.status(400).json({ msg: 'Essa turma não existe!' })
         }

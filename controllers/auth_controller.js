@@ -4,8 +4,6 @@ const jwt = require('jsonwebtoken');
 var db = require('../helpers/db_helpers');
 var helper = require('../helpers/helpers');
 
-
-
 module.exports.controller = (app, io, socket_list) => {
 
     // Resgitro de usuário
@@ -118,6 +116,15 @@ async function calculateHashAsync(plaintext) {
 }
 
 function generateToken(id) {
-    const SECRET = process.env.SECRET;
-    return jwt.sign({ userId: id }, SECRET, { expiresIn: 1200 }, { algorithm: 'RS256' });
+    return jwt.sign({ userId: id }, process.env.SECRET, { expiresIn: 1200 }, { algorithm: 'RS256' });
+}
+
+// Verifica o token
+module.exports.verifyJWT = (req, res, next) => {
+    const token = req.headers['x-acess-token'];
+    jwt.verify(token, process.env.SECRET, (err, decoded) => {
+        if(err) return res.status(401).end();
+        req.userId = decoded.userId;
+        next();
+    })
 }
