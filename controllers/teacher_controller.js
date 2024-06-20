@@ -13,20 +13,25 @@ module.exports.controller = (app, io, socket_list) => {
         let { token } = req.body;
         
         if (token) {
-            let userId = await getUserId(token)[0];
-
-            /*let person = db.query('SELECT * FROM phoenix_beta_002.tokens WHERE id=?', [id], (error, result) => {
-                if (error) { rejeitado(error.code); return; }
-                aceito(result);
-            })*/
+            let userId = await getUserId(token);
+            console.log(userId)
 
             if (userId) {
-                json = {
-                    auth: 'true',
-                    token: token,
-                    id: userId
-                };
-                res.status(200).json(json);
+                console.log(userId[0].user_id);
+                db.query('SELECT * FROM persons WHERE id=?', [userId[0].user_id], (error, result) => {
+                    if (error) { rejeitado(error.code); return; }
+                    if (result) {
+                        console.log(result);
+                        json = {
+                            auth: 'true',
+                            name: result[0].name,
+                            avatar: result[0].avatar
+                        };
+                        res.status(200).json(json);
+                    } else {
+                        res.status(401).json({ msg: 'Usuáro não encontrado' });
+                    }
+                })
             } else {
                 res.status(401).json({ msg: 'Token invalido!' });
             }
@@ -41,7 +46,7 @@ module.exports.controller = (app, io, socket_list) => {
 
 async function getUserId(token) {
     return new Promise((aceito, rejeitado) => {
-        db.query('SELECT user_id FROM phoenix_beta_002.tokens WHERE token=?', [token], (error, result) => {
+        db.query('SELECT user_id FROM tokens WHERE token=?', [token], (error, result) => {
             if (error) { rejeitado(error.code); return; }
             aceito(result);
         })

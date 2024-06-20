@@ -18,7 +18,7 @@ module.exports.controller = (app, io, socket_list) => {
                 res.json({ msg: 'Email já utilizado!' })
             }else{  
                 let userId = await getUserId(email);
-                let token = generateToken(userId);
+                let token = getToken(userId, email, await calculateHashAsync(password));
                 json = {
                     auth: 'true',
                     token: token
@@ -72,7 +72,7 @@ async function getToken(id, email, password) {
 
                     db.query('SELECT user_id from tokens where user_id=?', [id[0].id], (error, results) => {
                         if (error) { rejeitado(error); return; }
-                        if (results) {
+                        if (results[0]) {
                             db.query('UPDATE tokens SET token=? WHERE user_id=?', [token, id[0].id])
                         } else {
                             db.query('INSERT INTO tokens (user_id, token) values (?, ?)', [id[0].id, token]);
