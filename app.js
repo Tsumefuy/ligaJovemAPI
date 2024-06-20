@@ -37,7 +37,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 const corsOptions = {
-  origin: "http://localhost:80",
+  origin: "http://localhost",
   methods: ["GET","POST","PUT","PATCH","DELETE","HEAD","OPTIONS"]
 }
 
