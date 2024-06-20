@@ -2,7 +2,6 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 var db = require('../helpers/db_helpers');
-var helper = require('../helpers/helpers');
 
 module.exports.controller = (app, io, socket_list) => {
 
@@ -27,7 +26,7 @@ module.exports.controller = (app, io, socket_list) => {
                 res.status(201).json(json);
             }
         } else {
-            res.status(400).json({ msg: 'Inclua os dados corretamente!' })
+            res.status(400).json({ msg: 'Inclua os dados corretamente!' });
         }
     });
 
