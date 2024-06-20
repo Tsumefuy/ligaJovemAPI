@@ -26,7 +26,7 @@ module.exports.controller = (app, io, socket_list) => {
 
                         let dateF = `${ano}/${mes}/${dia}`;
 
-                        db.query('select loc, init, room_id from connection where user_id = ? and day > ? order by day asc, init asc limit 1;', [userId[0].user_id, dateF], (error, result_room) => {
+                        db.query('select loc, init, room_id from connection where user_id = ? and day > ? order by day asc, init asc limit 1', [userId[0].user_id, dateF], (error, result_room) => {
                             if (error) { rejeitado(error.code); return; }
                             if (result_room[0]) {
                                 json = {
@@ -38,11 +38,9 @@ module.exports.controller = (app, io, socket_list) => {
                                         init: result_room[0].init,
                                         local: result_room[0].loc,
                                         class: result_room[0].room_id
-                                    }
+                                    },
+                                    rooms: []
                                 };
-                                console.log(json);
-
-                                res.status(200).json(json);
                             } else {
                                 json = {
                                     auth: 'true',
@@ -53,10 +51,23 @@ module.exports.controller = (app, io, socket_list) => {
                                         init: "A definir",
                                         local: "A definir",
                                         class: "A definir"
-                                    }
+                                    },
+                                    rooms: []
                                 };
-                                res.status(200).json(json);
                             }
+
+                            db.query('select distinct rooms.id, rooms.course, rooms.mode from rooms inner join connection on rooms.id = connection.room_id and connection.user_id = ?', [userId[0].user_id], (error, result_rooms) => {
+                                if (error) { rejeitado(error.code); return; }
+                                for (let i=0; i < result_rooms.length; i++) {
+                                    json.rooms.push({
+                                        id: result_rooms[i].id,
+                                        mode: (result_rooms[i].mode=="E"),
+                                        course: result_rooms[i].course
+                                    });
+                                }
+                                console.log(json);
+                                res.status(200).json(json);
+                            })
                         });
                     } else {
                         res.status(401).json({ msg: 'Usuáro não encontrado' });
