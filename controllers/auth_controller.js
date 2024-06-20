@@ -68,8 +68,6 @@ async function getToken(id, email, password) {
                 } else {  
                     let token = generateToken(id);
 
-                    //console.log(id[0].id)
-
                     db.query('SELECT user_id from tokens where user_id=?', [id[0].id], (error, results) => {
                         if (error) { rejeitado(error); return; }
                         if (results[0]) {
