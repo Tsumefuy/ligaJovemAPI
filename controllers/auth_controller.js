@@ -65,8 +65,21 @@ async function getToken(id, email, password) {
             if (results) {
                 if (password != results[0].password) {
                     rejeitado();
-                } else {   
-                    aceito(generateToken(id)); // Cria e envia o token
+                } else {  
+                    let token = generateToken(id);
+
+                    //console.log(id[0].id)
+
+                    db.query('SELECT user_id from tokens where user_id=?', [id[0].id], (error, results) => {
+                        if (error) { rejeitado(error); return; }
+                        if (results) {
+                            db.query('UPDATE tokens SET token=? WHERE user_id=?', [token, id[0].id])
+                        } else {
+                            db.query('INSERT INTO tokens (user_id, token) values (?, ?)', [id[0].id, token]);
+                        }
+                    });
+    
+                    aceito(token); // Cria e envia o token
                 }
             } else {
                 rejeitado();
