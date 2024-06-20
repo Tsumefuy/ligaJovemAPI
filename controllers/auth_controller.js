@@ -18,9 +18,10 @@ module.exports.controller = (app, io, socket_list) => {
                 res.json({ msg: 'Email já utilizado!' })
             }else{  
                 let userId = await getUserId(email);
-                let token = getToken(userId, email, await calculateHashAsync(password));
+                let token = await getToken(userId[0].id, email, await calculateHashAsync(password));
                 json = {
                     auth: 'true',
+                    description: 'register successful',
                     token: token
                 };
                 res.status(201).json(json);
@@ -37,23 +38,35 @@ module.exports.controller = (app, io, socket_list) => {
         let { email, password } = req.body;
         
         if (email && password) {
-            let userId = await getUserId(email);
+            let user = await getUserId(email);
 
-            let token = await getToken(userId, email, await calculateHashAsync(password));
+            if (user) { // Se o usuário existir
+                let token = await getToken(user[0].id, email, await calculateHashAsync(password));
 
-            if (token) {
-                json = {
-                    auth: 'true',
-                    token: token,
-                };
-                res.json(json);
+                if (token) {
+                    json = {
+                        auth: 'true',
+                        description: 'login successful',
+                        token: token,
+                    };
+                    res.json(json);
+                } else {
+                    res.status(401).json({ msg: 'Senha invalida!' });
+                }
             } else {
-                res.status(401).json({ msg: 'Dados invalidos!' });
+                res.status(401).json({ msg: 'Usuário inexistente!' });
             }
-
         } else {
             res.status(400).json({ msg: 'Inclua os dados corretamente!' });
         }
+    });
+
+    app.get('/api/login/token', verifyJWT, async (req, res) => {
+        res.json({
+            auth: 'true',
+            description: 'valid token',
+            token: req.headers['x-acess-token']
+        })
     });
 
 }
@@ -68,12 +81,20 @@ async function getToken(id, email, password) {
                 } else {  
                     let token = generateToken(id);
 
-                    db.query('SELECT user_id from tokens where user_id=?', [id[0].id], (error, results) => {
+                    db.query('SELECT user_id from tokens where user_id=?', [id], (error, results) => {
                         if (error) { rejeitado(error); return; }
                         if (results[0]) {
-                            db.query('UPDATE tokens SET token=? WHERE user_id=?', [token, id[0].id])
+
+                            db.query('UPDATE tokens SET token=? WHERE user_id=?', [token, id], (error, result) => {
+                                if (error) { rejeitado(error); return; }
+                            });
+
                         } else {
-                            db.query('INSERT INTO tokens (user_id, token) values (?, ?)', [id[0].id, token]);
+
+                            db.query('INSERT INTO tokens (user_id, token) values (?, ?)', [id, token], (error, result) => {
+                                if (error) { rejeitado(error); return; }
+                            });
+
                         }
                     });
     
@@ -105,7 +126,11 @@ async function getUserId(email) {
     return new Promise((aceito, rejeitado) => {
         db.query('SELECT id FROM phoenix_beta_002.persons WHERE email=?', [email], (error, result) => {
             if (error) { rejeitado(error.code); return; }
-            aceito(result);
+            if (result.length > 0) {
+                aceito(result); // usuário existe
+            } else {
+                rejeitado(false); // usuário inexistente
+            }
         })
     })
     .catch(err => {
@@ -129,12 +154,20 @@ function generateToken(id) {
     return jwt.sign({ userId: id }, process.env.SECRET, { expiresIn: 1200 }, { algorithm: 'RS256' });
 }
 
+function verifyJWT(req, res, next) {
+    const token = req.headers['x-acess-token'];
+    jwt.verify(token, process.env.SECRET, (err, decoded) => {
+        if(err) { return res.status(401).end(); }
+        req.headers['userId'] = decoded;
+        next();
+    })
+}
+
 // Verifica o token
 module.exports.verifyJWT = (req, res, next) => {
     const token = req.headers['x-acess-token'];
     jwt.verify(token, process.env.SECRET, (err, decoded) => {
         if(err) return res.status(401).end();
-        req.userId = decoded.userId;
         next();
     })
 }
