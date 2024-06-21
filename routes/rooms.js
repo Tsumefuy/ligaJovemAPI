@@ -3,7 +3,7 @@ var router = express.Router();
 
 const roomsController = require('../controllers/rooms_controller');
 
-/*router
+router
     .get('/api/rooms', roomsController.controller);*/
 
 module.exports = router;

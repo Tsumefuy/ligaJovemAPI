@@ -1,10 +1,7 @@
-const crypto = require('crypto');
-const jwt = require('jsonwebtoken');
-
 var db = require('../helpers/db_helpers');
 var authController = require('./auth_controller.js');
 
-module.exports.controller = (app, io, socket_list) => {
+module.exports.controller = (app) => {
 
     // Login de usuário
     app.post('/api/teacher', async (req, res) => {

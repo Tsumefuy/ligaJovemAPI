@@ -12,16 +12,8 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 var server = require('http').createServer(app);
-var io = require('socket.io')(server, {
-  cors: {
-    origin: "http://localhost:4200",
-    methods: ["GET","POST"]
-  }
-});
 
 var serverPort = process.env.PORT || 3001;
-
-var user_socket_connect_list = [];
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -34,7 +26,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/api/users', usersRouter);
 
 const corsOptions = {
   origin: "http://localhost",
@@ -46,7 +38,7 @@ app.use(cors(corsOptions));
 fs.readdirSync('./controllers').forEach((file) => {
   if(file.substr(-3) == ".js") {
     route = require('./controllers/' + file);
-    route.controller(app, io, user_socket_connect_list);
+    route.controller(app);
   }
 })
 

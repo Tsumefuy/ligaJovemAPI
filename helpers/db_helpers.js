@@ -59,7 +59,7 @@ module.exports = {
             db.query(sqlQuery, args, (error, result) => {
                 return callback(err, result);
             })
-        } else if (db.state === "protcol_error") {
+        } else if (db.state === "protocol_error") {
             reconnect(db, () => {
                 db.query(sqlQuery, args, (error, result) => {
                     return callback(err, result);

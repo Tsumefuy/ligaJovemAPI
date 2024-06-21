@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 
 var db = require('../helpers/db_helpers');
 
-module.exports.controller = (app, io, socket_list) => {
+module.exports.controller = (app) => {
 
     // Resgitro de usuário
     app.post('/api/register', async (req, res) => {
@@ -32,7 +32,7 @@ module.exports.controller = (app, io, socket_list) => {
     });
 
     // Login de usuário
-    app.post('/api/login', async (req, res) => {
+    app.post('/api/login', verifyJWT, async (req, res) => {
         let json;
 
         let { email, password } = req.body;
@@ -59,14 +59,6 @@ module.exports.controller = (app, io, socket_list) => {
         } else {
             res.status(400).json({ msg: 'Inclua os dados corretamente!' });
         }
-    });
-
-    app.get('/api/login/token', verifyJWT, async (req, res) => {
-        res.json({
-            auth: 'true',
-            description: 'valid token',
-            token: req.headers['x-acess-token']
-        })
     });
 
 }
@@ -155,17 +147,22 @@ function generateToken(id) {
 }
 
 function verifyJWT(req, res, next) {
-    const token = req.headers['x-acess-token'];
+    const token = req.headers['authorization'];
     jwt.verify(token, process.env.SECRET, (err, decoded) => {
-        if(err) { return res.status(401).end(); }
-        req.headers['userId'] = decoded;
-        next();
+        if(err) { 
+            return next();
+        }
+        res.json({
+            auth: 'true',
+            description: 'valid token',
+            token: token
+        })
     })
 }
 
 // Verifica o token
 module.exports.verifyJWT = (req, res, next) => {
-    const token = req.headers['x-acess-token'];
+    const token = req.header['x-acess-token'];
     jwt.verify(token, process.env.SECRET, (err, decoded) => {
         if(err) return res.status(401).end();
         next();

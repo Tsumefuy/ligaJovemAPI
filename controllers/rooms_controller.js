@@ -2,7 +2,7 @@ var db = require('../helpers/db_helpers');
 var helper = require('../helpers/helpers');
 var authController = require('./auth_controller.js');
 
-module.exports.controller = (app, io, socket_list) => {
+module.exports.controller = (app) => {
 
     app.get('/api/rooms', authController.verifyJWT, async (req,res) => {
         let rooms = await getAllRooms();
