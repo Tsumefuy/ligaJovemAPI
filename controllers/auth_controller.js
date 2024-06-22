@@ -64,6 +64,8 @@ module.exports.controller = (app) => {
     app.post('/api/auth', async (req, res) => {
         const token = req.headers['authorization'];
 
+        console.log(token);
+
         if (token) {
             jwt.verify(token, process.env.SECRET, async (err, decoded) => {
                 if(err) { 
