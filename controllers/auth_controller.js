@@ -64,8 +64,6 @@ module.exports.controller = (app) => {
     app.post('/api/auth', async (req, res) => {
         const token = req.headers['authorization'];
 
-        console.log(token);
-
         if (token) {
             jwt.verify(token, process.env.SECRET, async (err, decoded) => {
                 if(err) { 
@@ -82,13 +80,13 @@ module.exports.controller = (app) => {
                                     token: token,
                                 });
                             } else {
-                                res.status(401).end();
+                                res.status(401).json({ msg: 'server internal error' });
                             }
                         } else {
-                            res.status(401).end();
+                            res.status(401).json({ msg: 'non-existent user' });
                         }
                     } else {
-                        res.status(401).end();
+                        res.status(401).json({ msg: 'invalid id'});
                     }
                 } 
                 if (decoded) {
@@ -100,12 +98,12 @@ module.exports.controller = (app) => {
                             token: token,
                         });
                     } else {
-                        res.status(401).end();
+                        res.status(401).json({ msg: 'Outra sessão ativa '});
                     }
                 }
             })
         } else {
-            res.status(401).end();
+            res.status(400).end();
         }
     })
 }
