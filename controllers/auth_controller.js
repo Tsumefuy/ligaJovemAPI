@@ -15,11 +15,11 @@ module.exports.controller = (app) => {
             let response = await singUp(name, mode, email, await calculateHashAsync(password));
 
             if(response=="ER_DUP_ENTRY"){
-                res.json({ msg: 'Email já utilizado!' })
+                res.status(401).json({ msg: 'Email já utilizado!' });
             }else{  
                 let userId = await getUserId(email);
                 let token = await getToken(userId[0].id, email, await calculateHashAsync(password));
-                json = {
+                json = {    
                     auth: 'true',
                     description: 'register successful',
                     token: token
@@ -27,18 +27,18 @@ module.exports.controller = (app) => {
                 res.status(201).json(json);
             }
         } else {
-            res.status(400).json({ msg: 'Inclua os dados corretamente!' });
+            res.status(400).end();
         }
     });
 
     // Login de usuário
-    app.post('/api/login', verifyJWT, async (req, res) => {
+    app.post('/api/login', async (req, res) => {
         let json;
 
         let { email, password } = req.body;
-        
+
         if (email && password) {
-            let user = await getUserId(email);
+            let user = await getUserId(email); 
 
             if (user) { // Se o usuário existir
                 let token = await getToken(user[0].id, email, await calculateHashAsync(password));
@@ -57,10 +57,55 @@ module.exports.controller = (app) => {
                 res.status(401).json({ msg: 'Usuário inexistente!' });
             }
         } else {
-            res.status(400).json({ msg: 'Inclua os dados corretamente!' });
+            res.status(400).end();
         }
     });
 
+    app.post('/api/auth', async (req, res) => {
+        const token = req.headers['authorization'];
+
+        if (token) {
+            jwt.verify(token, process.env.SECRET, async (err, decoded) => {
+                if(err) { 
+                    let id = await getUserIdBytoken(token);
+
+                    if (id) { 
+                        let user_login = await getEmailPasswordById(id[0].user_id);
+                        if (user_login) {
+                            let token = await getToken(id[0].user_id, user_login[0].email, user_login[0].password);
+                            if (token) {
+                                res.json({
+                                    auth: 'true',
+                                    description: 'login successful by new token',
+                                    token: token,
+                                });
+                            } else {
+                                res.status(401).end();
+                            }
+                        } else {
+                            res.status(401).end();
+                        }
+                    } else {
+                        res.status(401).end();
+                    }
+                } 
+                if (decoded) {
+                    let isCurrentTokenDB = await getCurrentTokenDB(token);
+                    if (isCurrentTokenDB) {
+                        res.json({
+                            auth: 'true',
+                            description: 'login successful by token',
+                            token: token,
+                        });
+                    } else {
+                        res.status(401).end();
+                    }
+                }
+            })
+        } else {
+            res.status(401).end();
+        }
+    })
 }
 
 async function getToken(id, email, password) {
@@ -95,7 +140,7 @@ async function getToken(id, email, password) {
             } else {
                 rejeitado();
             }
-        })
+        });
     })
     .catch((err) => {
         return err;
@@ -107,9 +152,37 @@ async function singUp(name, mode, email, password) {
         db.query('INSERT INTO phoenix_beta_002.persons (name, mode, email, password) values (?, ?, ?, ?)', [name, mode, email, password], (error, results) => {
             if(error) {rejeitado(error.code); return; }
             aceito(results);
-        })
+        });
     })
     .catch(err => {
+        return err;
+    });
+}
+
+async function getCurrentTokenDB(token) {
+    return new Promise((aceito, rejeitado) => {
+        db.query('SELECT token FROM tokens WHERE token=?', [token], (error, result) => {
+            if (error) { rejeitado(error.code); return; }
+            if (result.length > 0) {
+                aceito(result); // usuário existe
+            } else {
+                rejeitado(false); // usuário inexistente
+            }
+        })
+    })
+    .catch((err) => {
+        return err;
+    });
+}
+
+async function getEmailPasswordById(id) {
+    return new Promise((aceito, rejeitado) => {
+        db.query('SELECT email, password FROM phoenix_beta_002.persons WHERE id=?', [id], (error, results) => {
+            if (error) { rejeitado(error.code); return; }
+            aceito(results);
+        });
+    })
+    .catch((err) => {
         return err;
     });
 }
@@ -123,7 +196,23 @@ async function getUserId(email) {
             } else {
                 rejeitado(false); // usuário inexistente
             }
-        })
+        });
+    })
+    .catch(err => {
+        return err;
+    });
+}
+
+async function getUserIdBytoken(token) {
+    return new Promise((aceito, rejeitado) => {
+        db.query('SELECT user_id FROM phoenix_beta_002.tokens WHERE token=?', [token], (error, result) => {
+            if (error) { rejeitado(error.code); return; }
+            if (result.length > 0) {
+                aceito(result); // usuário existe
+            } else {
+                rejeitado(false); // usuário inexistente
+            }
+        });
     })
     .catch(err => {
         return err;
@@ -144,20 +233,6 @@ async function calculateHashAsync(plaintext) {
 
 function generateToken(id) {
     return jwt.sign({ userId: id }, process.env.SECRET, { expiresIn: 1200 }, { algorithm: 'RS256' });
-}
-
-function verifyJWT(req, res, next) {
-    const token = req.headers['authorization'];
-    jwt.verify(token, process.env.SECRET, (err, decoded) => {
-        if(err) { 
-            return next();
-        }
-        res.json({
-            auth: 'true',
-            description: 'valid token',
-            token: token
-        })
-    })
 }
 
 // Verifica o token

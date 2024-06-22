@@ -7,10 +7,10 @@ module.exports.controller = (app) => {
     app.post('/api/teacher', async (req, res) => {
         let json;
 
-        let { token } = req.body;
+        const token = req.headers['authorization'];
         
         if (token) {
-            let userId = await getUserId(token);
+            let userId = await getUserIdBytoken(token);
 
             if (userId[0]) {
                 db.query('SELECT * FROM persons WHERE id=?', [userId[0].user_id], (error, result_user) => {
@@ -78,7 +78,7 @@ module.exports.controller = (app) => {
         }
     });
 
-    app.post('/api/teacher/context', async (req, res) => {
+    app.get('/api/teacher/context', async (req, res) => {
         let json;
 
         let { token } = req.body;
@@ -142,17 +142,17 @@ module.exports.controller = (app) => {
                     }
                 });
             } else {
-                res.status(401).json({ msg: 'Token invalido!' });
+                res.status(400).json({ msg: 'Token invalido!' });
             }
         } else {
-            res.status(400).json({ msg: 'Inclua os dados corretamente!' });
+            res.status(401).json({ msg: 'Inclua os dados corretamente!' });
         }
     });
 
 }
 
 
-async function getUserId(token) {
+async function getUserIdBytoken(token) {
     return new Promise((aceito, rejeitado) => {
         db.query('SELECT user_id FROM tokens WHERE token=?', [token], (error, result) => {
             if (error) { rejeitado(error.code); return; }
