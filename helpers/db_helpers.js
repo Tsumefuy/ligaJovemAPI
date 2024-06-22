@@ -15,11 +15,7 @@ function reconnect(connection, callback) {
         user: process.env.DB_USER,
         port: process.env.DB_PORT,
         password: process.env.DB_PASS,
-        database: process.env.DB_NAME,
-        ssl: {
-            ca: fs.readFileSync(__dirname + '/ca.pem'),
-            rejectUnauthorized: false
-        }
+        database: process.env.DB_NAME
     });
     connection.connect((err) => {
         if (err) {

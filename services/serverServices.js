@@ -49,7 +49,6 @@ async function saveToken(id, token) {
     });
 }
 
-
 function generateToken(id) {
     return jwt.sign({ userId: id }, process.env.SECRET, { expiresIn: 1200 }, { algorithm: 'RS256' });
 }
@@ -166,7 +165,6 @@ module.exports = {
         if (token != '') {
             jwt.verify(token, process.env.SECRET, async (err, decoded) => {
                 if(err) { 
-                    console.log('o token não é mais válido');
                     let id = await getUserIdByToken(token);
 
                     if (id) { 
