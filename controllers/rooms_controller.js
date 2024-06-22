@@ -1,15 +1,14 @@
 var db = require('../helpers/db_helpers');
-var helper = require('../helpers/helpers');
-var authController = require('./auth_controller.js');
+const serverServices = require('../services/serverServices.js');
 
 module.exports.controller = (app) => {
 
-    app.get('/api/rooms', authController.verifyJWT, async (req,res) => {
+    app.get('/api/rooms', serverServices.verifyJWT, async (req,res) => {
         let rooms = await getAllRooms();
         res.json(rooms);
     })
 
-    app.get('/api/rooms/:id', authController.verifyJWT, async (req, res) => {
+    app.get('/api/rooms/:id', serverServices.verifyJWT, async (req, res) => {
         let room = await getRoom(req.params.id);  
         if (room) {
             res.json(room);s

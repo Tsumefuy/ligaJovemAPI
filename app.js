@@ -30,7 +30,7 @@ app.use('/api/users', usersRouter);
 
 const corsOptions = {
   origin: "http://localhost",
-  methods: ["GET","POST","PUT","PATCH","DELETE","HEAD","OPTIONS"]
+  methods: ["GET","POST","PUT","PATCH","DELETE","HEAD","OPTIONS"],
 }
 
 app.use(cors(corsOptions));
