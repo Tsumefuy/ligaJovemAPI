@@ -4,6 +4,6 @@ var router = express.Router();
 const teacherController = require('../controllers/teacher_controller');
 
 router
-    .get('/api/rooms', roomsController.controller);
+    .get('/api/teacher', async (req, res) => teacherController);
 
 module.exports = router;
