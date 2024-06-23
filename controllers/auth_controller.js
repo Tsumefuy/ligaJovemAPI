@@ -64,8 +64,7 @@ module.exports.controller = (app) => {
         if (token != '') {
             jwt.verify(token, process.env.SECRET, async (err, decoded) => {
                 if(err) { 
-
-                    //let id = await serverServices.getUserIdByToken(token);
+                    
                     let id = await serverServices.getUserIdByToken(token);
 
                     if (id) { 
