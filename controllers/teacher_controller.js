@@ -1,14 +1,38 @@
 var db = require('../helpers/db_helpers');
 const serverServices = require('../services/serverServices.js');
 
-/*
- * Install the Generative AI SDK
- *
- * $ npm install @google/generative-ai
- *
- * See the getting started guide for more information
- * https://ai.google.dev/gemini-api/docs/get-started/node
- */
+const fs = require('fs');
+
+function fileVerify(path) {
+  try {
+    fs.accessSync(path, fs.constants.F_OK);
+    return true; // O arquivo existe
+  } catch (err) {
+    return false; // O arquivo não existe
+  }
+}
+
+function saveHistory(userId, history) {
+    console.log(userId, history);
+    let file = "./convs/" + String(userId[0].user_id) + ".json";
+    fs.writeFile(file, JSON.stringify(history), 'utf8', (erro) => {
+        if (erro) {
+            console.error(erro);
+            return;
+        }
+    });
+}
+
+function loadHistory(path) {
+    try {
+        const data = fs.readFileSync(path, 'utf8');
+        const history = JSON.parse(data);
+        return history;
+    } catch (err) {
+        console.error('Erro ao ler o arquivo:', err);
+        throw err;  // Rejeite a promise se houver um erro
+    }
+}
 
 const {
     GoogleGenerativeAI,
@@ -34,17 +58,16 @@ const {
     responseMimeType: "text/plain",
   };
   
-  async function run(input) {
+  async function run(input, history) {
     const chatSession = model.startChat({
       generationConfig,
-      history: [],
+      history: history,
     });
   
-    const result = await chatSession.sendMessage(input);
-    console.log(chatSession);
-    return result;
+    await chatSession.sendMessage(input);
+    return chatSession.params.history;
   }
-
+;
 module.exports.controller = (app) => {
 
     app.get('/api/teacher', serverServices.verifyJWT, async (req, res) => {
@@ -117,32 +140,28 @@ module.exports.controller = (app) => {
         
     });
 
-    app.get('/api/teacher/context', serverServices.verifyJWT, async (req, res) => {
+    app.post('/api/teacher/chat', serverServices.verifyJWT, async (req, res) => {
         let token= req.headers['authorization'];
+
+        let { type, input } = req.body;
     
         let userId = await serverServices.getUserIdByToken(token);
 
-        if (userId[0]) {
-            let response = await getContext(userId);
-            res.status(200).json(response);
-        } else {
-            res.status(400).json({ msg: 'Token invalido!' });
-        }
-        
-    });
-
-    app.get('/api/teacher/chat', serverServices.verifyJWT, async (req, res) => {
-        let token= req.headers['authorization'];
-
-        let { type, inp } = req.body;
-    
-        let userId = await serverServices.getUserIdByToken(token);
+        let history;
 
         if (userId[0]) {
-            let input = await getContext(userId);
-            //console.log(JSON.stringify(input));
-            let response = await run(JSON.stringify(input));
-            res.status(200).json(response);
+            let path = "./convs/" + String(userId[0].user_id) + ".json";
+            if (fileVerify(path) && type == "continue") {
+                history = loadHistory(path);
+
+            } else {
+                history = [];
+                input = await getContext(userId);
+            }
+            console.log(input);
+            let histo = await run(JSON.stringify(input), history);
+            saveHistory(userId, histo);
+            res.status(200).json(histo[histo.length-1].parts[0].text);
         } else {
             res.status(400).json({ msg: 'Token invalido!' });
         }
