@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-var db = require('../helpers/db_helpers');
+//var db = require('../helpers/db_helpers');
+var db = require('../config/dbconn');
 
 async function getToken(id, email, password) {
     return new Promise((aceito, rejeitado) => {
@@ -102,10 +103,21 @@ module.exports = {
         return getToken(id, email, password);
     },
 
+    deleteToken: async(id) => {
+        return new Promise((aceito, rejeitado) => {
+            db.query('DELETE FROM phoenix_beta_002.tokens WHERE user_id=?', [id], (error, result) => {
+                if(error) { rejeitado(false); return; }
+                console.log(result);
+                if (result) { aceito(true); }
+                else { rejeitado(false); }
+            });
+        })
+    },
+
     signUp: async(name, mode, email, password) => {
         return new Promise((aceito, rejeitado) => {
             db.query('INSERT INTO phoenix_beta_002.persons (name, mode, email, password) values (?, ?, ?, ?)', [name, mode, email, password], (error, results) => {
-                if(error) {rejeitado(error.code); return; }
+                if(error) { rejeitado(error.code); return; }
                 aceito(results);
             });
         })

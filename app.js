@@ -29,8 +29,9 @@ app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 
 const corsOptions = {
-  origin: "http://localhost/",
+  origin: "http://localhost",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+  'Access-Control-Allow-Origin': 'http://localhost'
 }
 
 app.use(cors(corsOptions));

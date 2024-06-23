@@ -59,7 +59,7 @@ module.exports.controller = (app) => {
     });
 
     app.put('/api/login', async (req, res) => {
-        var token = req.headers['authorization'];
+        let token = req.headers['authorization'];
 
         if (token != '') {
             jwt.verify(token, process.env.SECRET, async (err, decoded) => {
@@ -106,4 +106,18 @@ module.exports.controller = (app) => {
         }
     });
 
+    app.delete('/api/logout', serverServices.verifyJWT, async(req, res) => {
+        let token = req.headers['authorization'];
+
+        let id = await serverServices.getUserIdByToken(token);
+        console.log(id[0].user_id);
+        
+        let deleted = await serverServices.deleteToken(id[0].user_id);
+
+        if (deleted) {
+            res.status(200).json( { msg: 'logout'});
+        } else {
+            res.status(401).json( { msg: 'other session active'} )
+        }
+    });
 }

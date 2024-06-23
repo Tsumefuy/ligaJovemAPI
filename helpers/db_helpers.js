@@ -1,6 +1,5 @@
 const mysql = require('mysql2');
 const fs = require('fs');
-const { query } = require('express');
 
 var db = require('../config/dbconn');
 var helper = require('./helpers');
@@ -53,12 +52,12 @@ module.exports = {
     query: (sqlQuery, args, callback) => {
         if (db.state === 'authenticated' || db.state === "connected") {
             db.query(sqlQuery, args, (error, result) => {
-                return callback(err, result);
+                return callback(error, result);
             })
         } else if (db.state === "protocol_error") {
             reconnect(db, () => {
                 db.query(sqlQuery, args, (error, result) => {
-                    return callback(err, result);
+                    return callback(error, result);
                 })
             })
         } else {
