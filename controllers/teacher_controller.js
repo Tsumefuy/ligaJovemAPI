@@ -13,7 +13,6 @@ function fileVerify(path) {
 }
 
 function saveHistory(userId, history) {
-    console.log(userId, history);
     let file = "./convs/" + String(userId[0].user_id) + ".json";
     fs.writeFile(file, JSON.stringify(history), 'utf8', (erro) => {
         if (erro) {

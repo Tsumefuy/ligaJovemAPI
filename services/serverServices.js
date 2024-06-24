@@ -107,7 +107,6 @@ module.exports = {
         return new Promise((aceito, rejeitado) => {
             db.query('DELETE FROM phoenix_beta_002.tokens WHERE user_id=?', [id], (error, result) => {
                 if(error) { rejeitado(false); return; }
-                console.log(result);
                 if (result) { aceito(true); }
                 else { rejeitado(false); }
             });

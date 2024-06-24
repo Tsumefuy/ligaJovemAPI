@@ -110,7 +110,6 @@ module.exports.controller = (app) => {
         let token = req.headers['authorization'];
 
         let id = await serverServices.getUserIdByToken(token);
-        console.log(id[0].user_id);
         
         let deleted = await serverServices.deleteToken(id[0].user_id);
 

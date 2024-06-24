@@ -84,4 +84,3 @@ String.prototype.replaceAll = (search, replacement) => {
   var target = this;
   return target.replace(new RegExp(search, 'g'), replacement);
 }
-
