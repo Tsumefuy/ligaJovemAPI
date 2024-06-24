@@ -94,6 +94,7 @@ module.exports.controller = (app) => {
                         if (result_room[0]) {
                             json = {
                                 name: result_user[0].name,
+                                email: result_user[0].email,
                                 avatar: result_user[0].avatar,
                                 mode: result_user[0].mode,
                                 next_class: {
@@ -106,6 +107,7 @@ module.exports.controller = (app) => {
                         } else {
                             json = {
                                 name: result_user[0].name,
+                                email: result_user[0].email,
                                 avatar: result_user[0].avatar,
                                 mode: result_user[0].mode,
                                 next_class: {
