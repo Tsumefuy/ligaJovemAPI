@@ -29,9 +29,10 @@ app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 
 const corsOptions = {
-  origin: "https://phoenixligajovem.netlify.app",
+  origin: "*",
+  //origin: "https://phoenixligajovem.netlify.app",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
-  'Access-Control-Allow-Origin': 'https://phoenixligajovem.netlify.app'
+  //'Access-Control-Allow-Origin': 'https://phoenixligajovem.netlify.app'
 }
 
 app.use(cors(corsOptions));
