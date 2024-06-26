@@ -15,10 +15,6 @@ var server = require('http').createServer(app);
 
 var serverPort = process.env.PORT || 3001;
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
 app.use(logger('dev'));
 app.use(express.json({limit: '100mb'}));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));

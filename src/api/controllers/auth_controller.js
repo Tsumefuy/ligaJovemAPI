@@ -39,6 +39,7 @@ module.exports.controller = (app) => {
     // Login de usuário
     app.post('/api/login', async (req, res) => {
         let json;
+        let token;
 
         let { email, password } = req.body;
 
@@ -46,7 +47,11 @@ module.exports.controller = (app) => {
             let user = await serverServices.getUserIdByEmail(email); 
 
             if (user) { // Se o usuário existir
-                let token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password, user[0].name));
+                if (password == '123456') { // Tirar depois (gambiarra kkkk)
+                    token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password, ''));
+                } else {
+                    token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password, user[0].name));
+                }
                 if (token) {
                     json = {
                         token: token
