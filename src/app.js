@@ -7,8 +7,8 @@ var logger = require('morgan');
 const cors = require('cors');
 var  fs = require('fs');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var indexRouter = require('./api/routes/index');
+var usersRouter = require('./api/routes/users');
 
 var app = express();
 var server = require('http').createServer(app);
@@ -26,7 +26,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/api/users', usersRouter);
+app.use('/users', usersRouter);
 
 const corsOptions = {
   origin: "*",
@@ -37,9 +37,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-fs.readdirSync('./controllers').forEach((file) => {
+fs.readdirSync('./src/api/controllers').forEach((file) => {
   if(file.substr(-3) == ".js") {
-    route = require('./controllers/' + file);
+    route = require('./api/controllers/' + file);
     route.controller(app);
   }
 })

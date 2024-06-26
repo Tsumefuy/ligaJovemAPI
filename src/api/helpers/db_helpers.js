@@ -1,7 +1,7 @@
 const mysql = require('mysql2');
 const fs = require('fs');
 
-var db = require('../config/dbconn');
+var db = require('../../config/dbconn');
 var helper = require('./helpers');
 
 reconnect(db, () => {});

@@ -1,5 +1,6 @@
-var db = require('../helpers/db_helpers');
+var db = require('../../config/dbconn');
 const serverServices = require('../services/serverServices.js');
+const middleware = require('../middlewares/middlewares.js');
 
 const fs = require('fs');
 
@@ -68,7 +69,7 @@ return chatSession.params.history;
 
 module.exports.controller = (app) => {
 
-    app.get('/api/teacher', serverServices.verifyJWT, async (req, res) => {
+    app.get('/api/teacher', middleware.verifyJWT, async (req, res) => {
         let json;
 
         var token = req.headers['authorization'];
@@ -130,17 +131,17 @@ module.exports.controller = (app) => {
                         })
                     });
                 } else {
-                    res.status(401).json({ msg: 'Usuáro não encontrado' });
+                    res.status(401).end();
                 }
             })
         } else {
-            res.status(401).json({ msg: 'Token invalido!' });
+            res.status(401).end();
         }
 
         
     });
 
-    app.post('/api/teacher/chat', serverServices.verifyJWT, async (req, res) => {
+    app.post('/api/teacher/chat', middleware.verifyJWT, async (req, res) => {
         let token= req.headers['authorization'];
 
         let { type, input } = req.body;
@@ -166,15 +167,15 @@ module.exports.controller = (app) => {
 
                 res.status(200).json(histo[histo.length-1].parts[0].text);
             } else {
-                res.status(400).json({ msg: 'Token invalido!' });
+                res.status(401).end();
             }
         } else {
-            res.status(400).json({ msg: 'Falta informação!' });
+            res.status(400).end();
         }
         
     });
 
-    app.get('/api/teacher/refresh', serverServices.verifyJWT, async (req, res) => {
+    app.get('/api/teacher/refresh', middleware.verifyJWT, async (req, res) => {
         var token = req.headers['authorization'];
         
         let userId = await serverServices.getUserIdByToken(token);
@@ -183,7 +184,7 @@ module.exports.controller = (app) => {
             let json = await refreshTime(loadHistory("./convs/" + String(userId[0].user_id) + ".json"))
             res.status(200).json(json);
         } else {
-            res.status(400).json({ msg: 'Token invalido!' });
+            res.status(400).end();
         }
     });
 }
