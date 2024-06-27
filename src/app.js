@@ -14,7 +14,7 @@ var usersRouter = require('./api/routes/users');
 var app = express();
 var server = require('http').createServer(app);
 
-var serverPort = process.env.PORT || 8080;
+var serverPort = process.env.PORT || 443;
 
 app.use(compression());
 app.use(logger('dev'));
