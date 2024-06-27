@@ -13,7 +13,7 @@ var usersRouter = require('./api/routes/users');
 var app = express();
 var server = require('http').createServer(app);
 
-var serverPort = process.env.PORT || 3001;
+var serverPort = process.env.PORT || 8080;
 
 app.use(logger('dev'));
 app.use(express.json({limit: '100mb'}));
