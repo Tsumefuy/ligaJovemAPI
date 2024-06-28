@@ -19,7 +19,7 @@ const sslOptions = {
 };
 
 // Porta HTTP (apenas para redirecionamento se necessário)
-const httpPort = 80;
+const httpPort = 3000;
 
 // Porta HTTPS
 //const httpsPort = 443;
