@@ -188,7 +188,7 @@ module.exports.controller = (app) => {
                 console.log(class_id);
                 db.query('select connection.matter, connection.day, connection.loc, connection.init, connection.end from rooms inner join connection on connection.room_id = rooms.id and connection.user_id = ? and connection.room_id = ?', [userId[0].user_id, class_id], (error, result_user) => {
                     if (error) { 
-                        rejeitado(error.code); 
+                        return error.code; 
                     }
                     if (result_user) {
                         json = {
