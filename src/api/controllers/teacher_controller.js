@@ -128,7 +128,7 @@ module.exports.controller = (app) => {
                             };
                         }
 
-                        db.query('select distinct rooms.id, rooms.course, rooms.mode from rooms inner join connection on rooms.id = connection.room_id and connection.user_id = ?', [userId[0].user_id], (error, result_rooms) => {
+                        db.query('select distinct rooms.id, rooms.course, rooms.mode from rooms inner join connection on rooms.id = connection.room_id and connection.user_id = ?', [userId[0].user_id], async (error, result_rooms) => {
                             if (error) { rejeitado(error.code); return; }
                             for (let i=0; i < result_rooms.length; i++) {
                                 json.rooms.push({
@@ -138,6 +138,8 @@ module.exports.controller = (app) => {
                                 });
                             }
                             res.status(200).json(json);
+                            input = await getContext(userId, "");
+                            saveBase(userId, input);
                         })
                     });
                 } else {
