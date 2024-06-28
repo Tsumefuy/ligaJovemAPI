@@ -175,16 +175,45 @@ module.exports.controller = (app) => {
         
     });
 
-    app.get('/api/teacher/refresh', serverServices.verifyJWT, async (req, res) => {
+    app.post('/api/teacher/class', serverServices.verifyJWT, async (req, res) => {
         var token = req.headers['authorization'];
+        var {class_id} = req.body;
         
         let userId = await serverServices.getUserIdByToken(token);
 
+        let json;
+
         if (userId[0]) {
-            let json = await refreshTime(loadHistory("./convs/" + String(userId[0].user_id) + ".json"))
-            res.status(200).json(json);
+            if (class_id) {
+                console.log(class_id);
+                db.query('select connection.matter, connection.day, connection.loc, connection.init, connection.end from rooms inner join connection on connection.room_id = rooms.id and connection.user_id = ? and connection.room_id = ?', [userId[0].user_id, class_id], (error, result_user) => {
+                    if (error) { 
+                        rejeitado(error.code); 
+                    }
+                    if (result_user) {
+                        json = {
+                            matter: result_user[0],
+                            days: []
+                        }
+
+                        for (let i=0; i < result_user.length; i++) {
+                            let day = {
+                                loc: result_user[i].loc,
+                                time: result_user[i].init + "-" + result_user[i].end
+                            }
+                            json.days.push(day);
+                        }
+                        res.status(200).json(json);
+                    } else {
+                        res.status(403).json(result_user);
+                    }
+                });
+            } else {
+                res.status(400).json({ msg: 'Classe não informada' });
+            }
+            
         } else {
-            res.status(400).json({ msg: 'Token invalido!' });
+            res.status(401).json({ msg: 'Token invalido!' });
         }
     });
 }
