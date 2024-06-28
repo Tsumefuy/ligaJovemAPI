@@ -4,6 +4,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const https = require('https');
 const compression = require('compression');
 const cors = require('cors');
 var  fs = require('fs');
@@ -11,10 +12,12 @@ var  fs = require('fs');
 var indexRouter = require('./api/routes/index');
 var usersRouter = require('./api/routes/users');
 
-var app = express();
-var server = require('http').createServer(app);
+const app = express();
 
-var serverPort = process.env.PORT || 8000;
+const options = {
+  key: fs.readFileSync('selfsigned.key'),
+  cert: fs.readFileSync('selfsigned.crt')
+};
 
 app.use(compression());
 app.use(logger('dev'));
@@ -58,9 +61,15 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-server.listen(serverPort);
+https.createServer(options, app).listen(443, () => {
+  console.log('Servidor HTTPS rodando na porta 443!');
+});
 
-console.log("Servidor ouvindo na porta " + serverPort)
+const http = require('http');
+http.createServer((req, res) => {
+  res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+  res.end();
+}).listen(80);
 
 Array.prototype.swap = (x,y) => {
   var b = this[x];
