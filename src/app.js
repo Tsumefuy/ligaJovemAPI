@@ -12,12 +12,12 @@ var  fs = require('fs');
 var indexRouter = require('./api/routes/index');
 var usersRouter = require('./api/routes/users');
 
-const app = express();
-
 const options = {
   key: fs.readFileSync('selfsigned.key'),
   cert: fs.readFileSync('selfsigned.crt')
 };
+
+const app = express();
 
 app.use(compression());
 app.use(logger('dev'));
