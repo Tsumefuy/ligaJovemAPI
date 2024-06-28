@@ -1,7 +1,10 @@
 {
   "name": "api-ligajovem",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "./src/app.js",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "start": "node ./src/app.js",
     "dev": "nodemon ./src/app.js"
@@ -16,6 +19,7 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "http-errors": "~1.6.3",
+    "https": "^1.0.0",
     "js-md5": "^0.8.3",
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.45",
