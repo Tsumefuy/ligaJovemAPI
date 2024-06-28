@@ -5,6 +5,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const https = require('https');
+const http = require('http');
 const compression = require('compression');
 const cors = require('cors');
 var  fs = require('fs');
@@ -12,10 +13,16 @@ var  fs = require('fs');
 var indexRouter = require('./api/routes/index');
 var usersRouter = require('./api/routes/users');
 
-const options = {
-  key: fs.readFileSync('selfsigned.key'),
-  cert: fs.readFileSync('selfsigned.crt')
+const sslOptions = {
+  key: fs.readFileSync('/etc/letsencrypt/live/seu-dominio/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/seu-dominio/fullchain.pem')
 };
+
+// Porta HTTP (apenas para redirecionamento se necessário)
+const httpPort = 8000;
+
+// Porta HTTPS
+const httpsPort = 443;
 
 const app = express();
 
@@ -61,15 +68,18 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-https.createServer(options, app).listen(443, () => {
-  console.log('Servidor HTTPS rodando na porta 443!');
+// Servidor HTTPS
+https.createServer(sslOptions, app).listen(httpsPort, () => {
+  console.log(`Servidor HTTPS rodando na porta ${httpsPort}!`);
 });
 
-const http = require('http');
+// Servidor HTTP para redirecionamento (opcional)
 http.createServer((req, res) => {
   res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
   res.end();
-}).listen(80);
+}).listen(httpPort, () => {
+  console.log(`Servidor HTTP rodando na porta ${httpPort}!`);
+});
 
 Array.prototype.swap = (x,y) => {
   var b = this[x];
