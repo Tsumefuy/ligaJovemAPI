@@ -76,7 +76,12 @@ module.exports = {
                     if (isCurrentTokenDB) {
                         next();
                     } else {
-                        res.status(401).json({ msg: 'other active session'});
+                        let otherToken = await serverServices.getTokenById(decoded.userId);
+                        if (otherToken) {
+                            res.status(401).json({ msg: 'other active session'});
+                        } else {
+                            res.status(401).end();
+                        }
                     }
                 }
             })
