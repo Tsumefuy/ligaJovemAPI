@@ -23,6 +23,16 @@ function saveHistory(userId, history) {
     });
 }
 
+function saveBase(userId, history) {
+    let file = "./convs/base/" + String(userId[0].user_id) + ".json";
+    fs.writeFile(file, JSON.stringify(history), 'utf8', (erro) => {
+        if (erro) {
+            console.error(erro);
+            return;
+        }
+    });
+}
+
 function loadHistory(path) {
     try {
         const data = fs.readFileSync(path, 'utf8');
@@ -153,11 +163,19 @@ module.exports.controller = (app) => {
         if (type && input) {
             if (userId[0]) {
                 let path = "./convs/" + String(userId[0].user_id) + ".json";
+                let pathBase = "./convs/base/" + String(userId[0].user_id) + ".json";
                 if (fileVerify(path) && type == "continue") {
-                    history = await refreshTime(loadHistory(path));
+                    history = await refreshTime(loadHistory(path), false);
 
                 } else {
-                    input = await getContext(userId, input);
+                    if (fileVerify(pathBase)) {
+                        console.log("ok");
+                        input = await refreshTime(loadHistory(pathBase), true, input);
+
+                    } else {
+                        input = await getContext(userId, input);
+                        saveBase(userId, input);
+                    }
                     history = [];
                 }
 
@@ -300,7 +318,7 @@ async function getRoomData(data, userId) {
     });
 }
 
-async function refreshTime(history) {
+async function refreshTime(history, json, input="") {
     return new Promise((resolve, reject) => {
         let dataAtual = new Date();
         let ano = dataAtual.getFullYear();
@@ -315,15 +333,23 @@ async function refreshTime(history) {
 
         let hhmm = `${horas < 10 ? '0' + horas : horas}:${minutos < 10 ? '0' + minutos : minutos}`;
 
-        let context = JSON.parse(history[0].parts[0].text);
+        if (json) {
+            history.date = dateF;
+            history.time = hhmm;
+            history.first_message = input;
 
-        context.date = dateF;
-        context.time = hhmm;
+            resolve(history);
+        } else {
+            let context = JSON.parse(history[0].parts[0].text);
 
-        let contextStr = JSON.stringify(context);
+            context.date = dateF;
+            context.time = hhmm;
 
-        history[0].parts[0].text = contextStr;
+            let contextStr = JSON.stringify(context);
 
-        resolve(history);
+            history[0].parts[0].text = contextStr;
+
+            resolve(history);
+        }
     });
 }
