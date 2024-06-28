@@ -14,8 +14,8 @@ var indexRouter = require('./api/routes/index');
 var usersRouter = require('./api/routes/users');
 
 const sslOptions = {
-  key: fs.readFileSync('/etc/letsencrypt/live/seu-dominio/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/seu-dominio/fullchain.pem')
+  key: fs.readFileSync('/etc/letsencrypt/live/phoenixapi.criarsite.online/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/phoenixapi.criarsite.online/fullchain.pem')
 };
 
 // Porta HTTP (apenas para redirecionamento se necessário)
