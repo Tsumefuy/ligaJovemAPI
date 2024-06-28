@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-//var db = require('../helpers/db_helpers');
-var db = require('../config/dbconn');
+var db = require('../../config/dbconn');
 
 async function getToken(id, email, password) {
     return new Promise((aceito, rejeitado) => {
@@ -11,7 +10,7 @@ async function getToken(id, email, password) {
                 if (password != results[0].password) {
                     rejeitado(false);
                 } else {  
-                    let token = generateToken(id); // Cria o token
+                    let token = generateToken(id, email); // Cria o token
                     let saved = await saveToken(id, token);
                     if (saved) {
                         aceito(token);  // Envia o token
@@ -50,20 +49,33 @@ async function saveToken(id, token) {
     });
 }
 
-function generateToken(id) {
-    return jwt.sign({ userId: id }, process.env.SECRET, { expiresIn: 1200 }, { algorithm: 'RS256' });
+function generateToken(id, email) {
+    return jwt.sign({ userId: id, email: email  }, process.env.SECRET, { expiresIn: 1200 }, { algorithm: 'RS256' });
 }
 
 async function getCurrentTokenDB(token) {
     return new Promise((aceito, rejeitado) => {
-        db.query('SELECT token FROM tokens WHERE token=?', [token], (error, result) => {
+        db.query('SELECT token FROM tokens WHERE token=?', [token], async (error, result) => {
             if (error) { rejeitado(error.code); return; }
             if (result.length > 0) {
-                aceito(result); // usuário existe
+                aceito(result);
             } else {
-                rejeitado(false); // usuário inexistente
+                rejeitado(false);
             }
-        })
+        });
+    })
+    .catch((err) => {
+        return err;
+    });
+}
+
+async function getTokenById(id) {
+    return new Promise((aceito, rejeitado) => {
+        db.query('SELECT token FROM tokens WHERE user_id=?', [id], async (error, result) =>{
+            if (error) { rejeitado(error.code); return; }
+            if (result.length > 0) { aceito(true); }
+            else { rejeitado(false); }
+        });
     })
     .catch((err) => {
         return err;
@@ -103,11 +115,14 @@ module.exports = {
         return getToken(id, email, password);
     },
 
+    saveToken: async(id, token) =>{
+        return saveToken(id, token);
+    },
+
     deleteToken: async(id) => {
         return new Promise((aceito, rejeitado) => {
             db.query('DELETE FROM phoenix_beta_002.tokens WHERE user_id=?', [id], (error, result) => {
                 if(error) { rejeitado(false); return; }
-                console.log(result);
                 if (result) { aceito(true); }
                 else { rejeitado(false); }
             });
@@ -127,8 +142,11 @@ module.exports = {
     },
 
     getCurrentTokenDB: async(token) => {
-        return await getCurrentTokenDB(token);
-        //return getCurrentTokenDB(token);
+        return getCurrentTokenDB(token);
+    },
+
+    getTokenById: async(id) => {
+        return getTokenById(id);
     },
 
     getEmailPasswordById: async(id) => {
@@ -137,7 +155,7 @@ module.exports = {
 
     getUserIdByEmail: async(email) => {
         return new Promise((aceito, rejeitado) => {
-            db.query('SELECT id FROM phoenix_beta_002.persons WHERE email=?', [email], (error, result) => {
+            db.query('SELECT id, name FROM phoenix_beta_002.persons WHERE email=?', [email], (error, result) => {
                 if (error) { rejeitado(error.code); return; }
                 if (result.length > 0) {
                     aceito(result); // usuário existe
@@ -155,7 +173,18 @@ module.exports = {
         return getUserIdByToken(token);
     },
 
-    calculateHashAsync: async(plaintext) => {
+    deleteUser: async(id) => {
+        return new Promise((aceito, rejeitado) => {
+            db.query('DELETE FROM phoenix_beta_002.persons WHERE id=?' [id], (error, result) => {
+                if (error) { rejeitado(error.code); return; }
+                if (result) { aceito(true); }
+                else { rejeitado(false); }
+            })
+        })
+    },
+
+    calculateHashAsync: async(plaintext, salt) => {
+        plaintext += salt;
         const hashStream = crypto.createHash('sha256');
     
         // Alimenta o stream com a mensagem
@@ -167,47 +196,7 @@ module.exports = {
         return hash;
     },
 
-    generateToken: (id) => {
-        generateToken(id);
+    generateToken: async (id, email) => {
+        return generateToken(id, email);
     },
-
-    verifyJWT: async(req, res, next) => {
-        var token = req.headers['authorization'];
-
-        if (token != '') {
-            jwt.verify(token, process.env.SECRET, async (err, decoded) => {
-                if(err) { 
-                    let id = await getUserIdByToken(token);
-
-                    if (id) { 
-                        let user_login = await getEmailPasswordById(id[0].user_id);
-                        if (user_login) {
-                            token = await getToken(id[0].user_id, user_login[0].email, user_login[0].password);
-                            if (token) {
-                                next();
-                            } else {
-                                res.status(401).json({ msg: 'server internal error' });
-                            }
-                        } else {
-                            res.status(401).json({ msg: 'non-existent user' });
-                        }
-                    } else {
-                        res.status(401).json({ msg: 'invalid authentication'});
-                    }
-                } 
-                if (decoded) {
-                    let isCurrentTokenDB = await getCurrentTokenDB(token);
-
-                    if (isCurrentTokenDB) {
-                        next();
-                    } else {
-                        res.status(401).json({ msg: 'other active session'});
-                    }
-                }
-            })
-        } else {
-            res.status(401).end();
-        }
-    },
-
 }

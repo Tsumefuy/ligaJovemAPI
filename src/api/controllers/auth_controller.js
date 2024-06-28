@@ -1,3 +1,4 @@
+const middleware = require('../middlewares/middlewares.js');
 const serverServices = require('../services/serverServices.js');
 const jwt = require('jsonwebtoken');
 
@@ -10,19 +11,25 @@ module.exports.controller = (app) => {
         let { name, mode, email, password } = req.body;
 
         if (name && mode && email && password) {
-            let response = await serverServices.signUp(name, mode, email, await serverServices.calculateHashAsync(password));
+            let hash = await serverServices.calculateHashAsync(password, name);
+
+            let response = await serverServices.signUp(name, mode, email, hash);
 
             if(response=="ER_DUP_ENTRY"){
                 res.status(401).json({ msg: 'Email já utilizado!' });
             }else{  
                 let userId = await serverServices.getUserIdByEmail(email);
-                let token = await serverServices.getToken(userId[0].id, email, await serverServices.calculateHashAsync(password));
-                json = {    
-                    auth: 'true',
-                    description: 'register successful',
-                    token: token
-                };
-                res.status(201).json(json);
+                let token = await serverServices.generateToken(userId[0].id, email); // Cria o token
+                let saved = await serverServices.saveToken(userId[0].id, token);
+                if (saved) {
+                    json = {    
+                        token: token
+                    };
+                    res.status(201).json(json);
+                } else {
+                    serverServices.deleteUser(userId[0].id);
+                    res.status(500).end();
+                }
             }
         } else {
             res.status(400).end();
@@ -32,6 +39,7 @@ module.exports.controller = (app) => {
     // Login de usuário
     app.post('/api/login', async (req, res) => {
         let json;
+        let token;
 
         let { email, password } = req.body;
 
@@ -39,25 +47,28 @@ module.exports.controller = (app) => {
             let user = await serverServices.getUserIdByEmail(email); 
 
             if (user) { // Se o usuário existir
-                let token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password));
+                if (password == '123456') { // Tirar depois (gambiarra kkkk)
+                    token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password, ''));
+                } else {
+                    token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password, user[0].name));
+                }
                 if (token) {
                     json = {
-                        auth: 'true',
-                        description: 'login successful',
-                        token: token,
+                        token: token
                     };
                     res.json(json);
                 } else {
-                    res.status(401).json({ msg: 'Senha invalida!' });
+                    res.status(401).end();
                 }
             } else {
-                res.status(401).json({ msg: 'Usuário inexistente!' });
+                res.status(401).end();
             }
         } else {
             res.status(400).end();
         }
     });
 
+    // Verifica Token
     app.put('/api/login', async (req, res) => {
         let token = req.headers['authorization'];
 
@@ -73,31 +84,26 @@ module.exports.controller = (app) => {
                             token = await serverServices.getToken(id[0].user_id, user_login[0].email, user_login[0].password);
                             if (token) {
                                 res.json({
-                                    auth: 'true',
-                                    description: 'login successful by new token',
                                     token: token,
                                 });
                             } else {
-                                res.status(401).json({ msg: 'server internal error' });
+                                res.status(401).end();
                             }
                         } else {
-                            res.status(401).json({ msg: 'non-existent user' });
+                            res.status(401).end();
                         }
                     } else {
-                        res.status(401).json({ msg: 'invalid authentication'});
+                        res.status(401).end();
                     }
                 } 
                 if (decoded) {
-                    //let isCurrentTokenDB = await serverServices.getCurrentTokenDB(token);
                     let isCurrentTokenDB = await serverServices.getCurrentTokenDB(token);
                     if (isCurrentTokenDB) {
                         res.json({
-                            auth: 'true',
-                            description: 'login successful by token',
-                            token: token,
+                            token: token
                         });
                     } else {
-                        res.status(401).json({ msg: 'other active session'});
+                        res.status(401).end();
                     }
                 }
             })
@@ -106,18 +112,18 @@ module.exports.controller = (app) => {
         }
     });
 
-    app.delete('/api/logout', serverServices.verifyJWT, async(req, res) => {
+    // Logout
+    app.delete('/api/logout', middleware.verifyJWT, async(req, res) => {
         let token = req.headers['authorization'];
 
         let id = await serverServices.getUserIdByToken(token);
-        console.log(id[0].user_id);
         
         let deleted = await serverServices.deleteToken(id[0].user_id);
 
         if (deleted) {
-            res.status(200).json( { msg: 'logout'});
+            res.status(200).end();
         } else {
-            res.status(401).json( { msg: 'other session active'} )
+            res.status(401).end();
         }
     });
 }

@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Liga Jovem API' });
+  res.json({ msg: 'API PHOENIX!'});
 });
 
 module.exports = router;

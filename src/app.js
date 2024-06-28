@@ -4,21 +4,22 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const https = require('https');
+const compression = require('compression');
 const cors = require('cors');
 var  fs = require('fs');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var indexRouter = require('./api/routes/index');
+var usersRouter = require('./api/routes/users');
 
-var app = express();
-var server = require('http').createServer(app);
+const options = {
+  key: fs.readFileSync('selfsigned.key'),
+  cert: fs.readFileSync('selfsigned.crt')
+};
 
-var serverPort = process.env.PORT || 3001;
+const app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
+app.use(compression());
 app.use(logger('dev'));
 app.use(express.json({limit: '100mb'}));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
@@ -26,19 +27,20 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/api/users', usersRouter);
+app.use('/users', usersRouter);
 
 const corsOptions = {
   origin: "*",
+  //origin: "https://phoenixligajovem.netlify.app",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
-  'Access-Control-Allow-Origin': 'http://localhost'
+  //'Access-Control-Allow-Origin': 'https://phoenixligajovem.netlify.app'
 }
 
 app.use(cors(corsOptions));
 
-fs.readdirSync('./controllers').forEach((file) => {
+fs.readdirSync('./src/api/controllers').forEach((file) => {
   if(file.substr(-3) == ".js") {
-    route = require('./controllers/' + file);
+    route = require('./api/controllers/' + file);
     route.controller(app);
   }
 })
@@ -53,17 +55,21 @@ app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.json('error');
 });
 
 module.exports = app;
 
-server.listen(serverPort);
+https.createServer(options, app).listen(443, () => {
+  console.log('Servidor HTTPS rodando na porta 443!');
+});
 
-console.log("Servidor ouvindo na porta " + serverPort)
+const http = require('http');
+http.createServer((req, res) => {
+  res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+  res.end();
+}).listen(80);
 
 Array.prototype.swap = (x,y) => {
   var b = this[x];
@@ -84,4 +90,3 @@ String.prototype.replaceAll = (search, replacement) => {
   var target = this;
   return target.replace(new RegExp(search, 'g'), replacement);
 }
-

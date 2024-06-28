@@ -1,14 +1,15 @@
-var db = require('../helpers/db_helpers');
+var db = require('../../config/dbconn');
 const serverServices = require('../services/serverServices.js');
+const middleware = require('../middlewares/middlewares.js');
 
 module.exports.controller = (app) => {
 
-    app.get('/api/rooms', serverServices.verifyJWT, async (req,res) => {
+    app.get('/api/rooms', middleware.verifyJWT, async (req,res) => {
         let rooms = await getAllRooms();
         res.json(rooms);
     })
 
-    app.get('/api/rooms/:id', serverServices.verifyJWT, async (req, res) => {
+    app.get('/api/rooms/:id', middleware.verifyJWT, async (req, res) => {
         let room = await getRoom(req.params.id);  
         if (room) {
             res.json(room);s

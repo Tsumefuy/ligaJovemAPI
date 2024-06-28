@@ -1,5 +1,6 @@
-var db = require('../helpers/db_helpers');
+var db = require('../../config/dbconn');
 const serverServices = require('../services/serverServices.js');
+const middleware = require('../middlewares/middlewares.js');
 
 const fs = require('fs');
 
@@ -13,7 +14,6 @@ function fileVerify(path) {
 }
 
 function saveHistory(userId, history) {
-    console.log(userId, history);
     let file = "./convs/" + String(userId[0].user_id) + ".json";
     fs.writeFile(file, JSON.stringify(history), 'utf8', (erro) => {
         if (erro) {
@@ -69,7 +69,7 @@ return chatSession.params.history;
 
 module.exports.controller = (app) => {
 
-    app.get('/api/teacher', serverServices.verifyJWT, async (req, res) => {
+    app.get('/api/teacher', middleware.verifyJWT, async (req, res) => {
         let json;
 
         var token = req.headers['authorization'];
@@ -131,17 +131,17 @@ module.exports.controller = (app) => {
                         })
                     });
                 } else {
-                    res.status(401).json({ msg: 'Usuáro não encontrado' });
+                    res.status(401).end();
                 }
             })
         } else {
-            res.status(401).json({ msg: 'Token invalido!' });
+            res.status(401).end();
         }
 
         
     });
 
-    app.post('/api/teacher/chat', serverServices.verifyJWT, async (req, res) => {
+    app.post('/api/teacher/chat', middleware.verifyJWT, async (req, res) => {
         let token= req.headers['authorization'];
 
         let { type, input } = req.body;
@@ -167,53 +167,24 @@ module.exports.controller = (app) => {
 
                 res.status(200).json(histo[histo.length-1].parts[0].text);
             } else {
-                res.status(400).json({ msg: 'Token invalido!' });
+                res.status(401).end();
             }
         } else {
-            res.status(400).json({ msg: 'Falta informação!' });
+            res.status(400).end();
         }
         
     });
 
-    app.post('/api/teacher/class', serverServices.verifyJWT, async (req, res) => {
+    app.get('/api/teacher/refresh', middleware.verifyJWT, async (req, res) => {
         var token = req.headers['authorization'];
-        var {class_id} = req.body;
         
         let userId = await serverServices.getUserIdByToken(token);
 
-        let json;
-
         if (userId[0]) {
-            if (class_id) {
-                console.log(class_id);
-                db.query('select connection.matter, connection.day, connection.loc, connection.init, connection.end from rooms inner join connection on connection.room_id = rooms.id and connection.user_id = ? and connection.room_id = ?', [userId[0].user_id, class_id], (error, result_user) => {
-                    if (error) { 
-                        rejeitado(error.code); 
-                    }
-                    if (result_user) {
-                        json = {
-                            matter: result_user[0],
-                            days: []
-                        }
-
-                        for (let i=0; i < result_user.length; i++) {
-                            let day = {
-                                loc: result_user[i].loc,
-                                time: result_user[i].init + "-" + result_user[i].end
-                            }
-                            json.days.push(day);
-                        }
-                        res.status(200).json(json);
-                    } else {
-                        res.status(403).json(result_user);
-                    }
-                });
-            } else {
-                res.status(400).json({ msg: 'Classe não informada' });
-            }
-            
+            let json = await refreshTime(loadHistory("./convs/" + String(userId[0].user_id) + ".json"))
+            res.status(200).json(json);
         } else {
-            res.status(401).json({ msg: 'Token invalido!' });
+            res.status(400).end();
         }
     });
 }
