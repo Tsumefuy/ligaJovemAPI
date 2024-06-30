@@ -13,16 +13,11 @@ var  fs = require('fs');
 var indexRouter = require('./api/routes/index');
 var usersRouter = require('./api/routes/users');
 
-const sslOptions = {
-  key: fs.readFileSync('/etc/letsencrypt/live/phoenixapi.criarsite.online/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/phoenixapi.criarsite.online/fullchain.pem')
-};
-
 // Porta HTTP (apenas para redirecionamento se necessário)
 const httpPort = 3000;
 
-// Porta HTTPS
-const httpsPort = 443;
+// Porta HTTPS (usada pelo Nginx, não pelo Node.js diretamente)
+const httpsPort = 3443;
 
 const app = express();
 
@@ -38,9 +33,7 @@ app.use('/users', usersRouter);
 
 const corsOptions = {
   origin: "*",
-  //origin: "https://phoenixligajovem.netlify.app",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
-  //'Access-Control-Allow-Origin': 'https://phoenixligajovem.netlify.app'
 }
 
 app.use(cors(corsOptions));
@@ -68,20 +61,12 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-//Servidor HTTPS
-https.createServer(sslOptions, app).listen(httpsPort, () => {
-  http.createServer(app).listen(httpsPort, () => {
-    console.log(`Servidor HTTPS rodando na porta ${httpsPort}!`);
-  });
-});
-
-// Servidor HTTP para redirecionamento (opcional)
-http.createServer((req, res) => {
-  res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
-  res.end();
-}).listen(httpPort, () => {
+// Servidor HTTP
+http.createServer(app).listen(httpPort, () => {
   console.log(`Servidor HTTP rodando na porta ${httpPort}!`);
 });
+
+// Note que removi o servidor HTTPS direto no Node.js para evitar conflito com o Nginx
 
 Array.prototype.swap = (x,y) => {
   var b = this[x];
@@ -95,7 +80,7 @@ Array.prototype.insert = (index, item) => {
 }
 
 Array.prototype.replace_null = (replace = '""') => {
-  return JSON.parse(JSON.stringify(this).replace(/mull/g, replace));
+  return JSON.parse(JSON.stringify(this).replace(/null/g, replace));
 }
 
 String.prototype.replaceAll = (search, replacement) => {
