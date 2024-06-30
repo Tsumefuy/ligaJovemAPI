@@ -70,8 +70,9 @@ module.exports = app;
 
 //Servidor HTTPS
 https.createServer(sslOptions, app).listen(httpsPort, () => {
-//http.createServer(app).listen(httpsPort, () => {
-  console.log(`Servidor HTTPS rodando na porta ${httpsPort}!`);
+  http.createServer(app).listen(httpsPort, () => {
+    console.log(`Servidor HTTPS rodando na porta ${httpsPort}!`);
+  });
 });
 
 // Servidor HTTP para redirecionamento (opcional)
