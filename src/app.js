@@ -13,16 +13,17 @@ var  fs = require('fs');
 var indexRouter = require('./api/routes/index');
 var usersRouter = require('./api/routes/users');
 
-const sslOptions = {
+/*const sslOptions = {
   key: fs.readFileSync('/etc/letsencrypt/live/phoenixapi.criarsite.online/privkey.pem'),
   cert: fs.readFileSync('/etc/letsencrypt/live/phoenixapi.criarsite.online/fullchain.pem')
 };
+*/
 
 // Porta HTTP (apenas para redirecionamento se necessário)
-const httpPort = 3000;
+const httpPort = process.env.PORT || 3000;
 
 // Porta HTTPS
-const httpsPort = 443;
+//const httpsPort = 443;
 
 const app = express();
 
@@ -69,17 +70,14 @@ app.use(function(err, req, res, next) {
 module.exports = app;
 
 //Servidor HTTPS
-https.createServer(sslOptions, app).listen(httpsPort, () => {
+/*https.createServer(sslOptions, app).listen(httpsPort, () => {
   http.createServer(app).listen(httpsPort, () => {
     console.log(`Servidor HTTPS rodando na porta ${httpsPort}!`);
   });
-});
+});*/
 
 // Servidor HTTP para redirecionamento (opcional)
-http.createServer((req, res) => {
-  res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
-  res.end();
-}).listen(httpPort, () => {
+http.createServer(app).listen(httpPort, () => {
   console.log(`Servidor HTTP rodando na porta ${httpPort}!`);
 });
 
