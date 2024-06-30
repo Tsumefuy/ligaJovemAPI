@@ -14,7 +14,12 @@ function reconnect(connection, callback) {
         user: process.env.DB_USER,
         port: process.env.DB_PORT,
         password: process.env.DB_PASS,
-        database: process.env.DB_NAME
+        database: process.env.DB_NAME,
+        ssl: {
+            ca: fs.readFileSync('./src/ssl/server-ca.pem'),
+            cert: fs.readFileSync('./src/ssl/client-cert.pem'),
+            key: fs.readFileSync('./src/ssl/client-key.pem')
+        }
     });
     connection.connect((err) => {
         if (err) {
