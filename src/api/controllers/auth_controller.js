@@ -46,7 +46,7 @@ module.exports.controller = (app) => {
         if (email && password) {
             let user = await serverServices.getUserIdByEmail(email); 
 
-            if (user) { // Se o usuário existir
+            if (user[0]) { // Se o usuário existir
                 if (password == '123456') { // Tirar depois (gambiarra kkkk)
                     token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password, ''));
                 } else {
@@ -78,7 +78,7 @@ module.exports.controller = (app) => {
                     
                     let id = await serverServices.getUserIdByToken(token);
 
-                    if (id) { 
+                    if (id[0]) { 
                         let user_login = await serverServices.getEmailPasswordById(id[0].user_id);
                         if (user_login) {
                             token = await serverServices.getToken(id[0].user_id, user_login[0].email, user_login[0].password);
@@ -118,10 +118,14 @@ module.exports.controller = (app) => {
 
         let id = await serverServices.getUserIdByToken(token);
         
-        let deleted = await serverServices.deleteToken(id[0].user_id);
+        if (id[0]) {
+            let deleted = await serverServices.deleteToken(id[0].user_id);
 
-        if (deleted) {
-            res.status(200).end();
+            if (deleted) {
+                res.status(200).end();
+            } else {
+                res.status(401).end();
+            }
         } else {
             res.status(401).end();
         }
