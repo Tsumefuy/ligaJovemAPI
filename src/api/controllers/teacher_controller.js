@@ -60,7 +60,7 @@ const model = genAI.getGenerativeModel({
 });
   
 const generationConfig = {
-temperature: 0.7,
+temperature: 0.8,
 topP: 0.95,
 topK: 64,
 maxOutputTokens: 8192,
@@ -171,7 +171,6 @@ module.exports.controller = (app) => {
 
                 } else {
                     if (fileVerify(pathBase)) {
-                        console.log("ok");
                         input = await refreshTime(loadHistory(pathBase), true, input);
 
                     } else {
