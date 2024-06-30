@@ -14,7 +14,7 @@ var indexRouter = require('./api/routes/index');
 var usersRouter = require('./api/routes/users');
 
 // Porta HTTP (apenas para redirecionamento se necessário)
-const httpPort = 3001;
+const httpPort = process.env.PORT || 3001;
 
 // Porta HTTPS (usada pelo Nginx, não pelo Node.js diretamente)
 //const httpsPort = 8443;
