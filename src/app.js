@@ -16,8 +16,12 @@ var usersRouter = require('./api/routes/users');
 // Porta HTTP (apenas para redirecionamento se necessário)
 const httpPort = process.env.PORT || 3001;
 
-// Porta HTTPS (usada pelo Nginx, não pelo Node.js diretamente)
-//const httpsPort = 8443;
+const httpsPort = 443;
+
+const sslOptions = {
+  key: fs.readFileSync('/etc/letsencrypt/live/phoenixapi.criarsite.online/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/phoenixapi.criarsite.online/fullchain.pem')
+};
 
 const app = express();
 
@@ -61,10 +65,15 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-// Servidor HTTP
+// Servidor HTTPS
+https.createServer(sslOptions, app).listen(httpsPort, () => {
+  console.log(`Servidor HTTPS rodando na porta ${httpsPort}!`);
+});
+
+/*// Servidor HTTP
 http.createServer(app).listen(httpPort, () => {
   console.log(`Servidor HTTP rodando na porta ${httpPort}!`);
-});
+});*/
 
 Array.prototype.swap = (x,y) => {
   var b = this[x];
