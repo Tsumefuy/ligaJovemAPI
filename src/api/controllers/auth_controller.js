@@ -11,7 +11,12 @@ module.exports.controller = (app) => {
         let { name, mode, email, password } = req.body;
 
         if (name && mode && email && password) {
-            let hash = await serverServices.calculateHashAsync(password, name);
+            let hash;
+            if (password == '123456') { // Tirar depois (gambiarra kkkk)
+                hash = await serverServices.calculateHashAsync(password, '');
+            } else {
+                hash = await serverServices.calculateHashAsync(password, user[0].name);
+            }
 
             let response = await serverServices.signUp(name, mode, email, hash);
 
