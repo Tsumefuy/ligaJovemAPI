@@ -17,7 +17,7 @@ var usersRouter = require('./api/routes/users');
 const httpPort = 3001;
 
 // Porta HTTPS (usada pelo Nginx, não pelo Node.js diretamente)
-const httpsPort = 8443;
+//const httpsPort = 8443;
 
 const app = express();
 
@@ -65,8 +65,6 @@ module.exports = app;
 http.createServer(app).listen(httpPort, () => {
   console.log(`Servidor HTTP rodando na porta ${httpPort}!`);
 });
-
-// Note que removi o servidor HTTPS direto no Node.js para evitar conflito com o Nginx
 
 Array.prototype.swap = (x,y) => {
   var b = this[x];
