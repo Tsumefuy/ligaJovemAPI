@@ -34,7 +34,7 @@ module.exports = {
                     } else {
                         let otherToken = await serverServices.getTokenById(decoded.userId);
                         if (otherToken) {
-                            res.status(401).json({ msg: 'other active session'});
+                            res.status(401).json({ msg: 'Outra sessão ativa!'});
                         } else {
                             res.status(401).end();
                         }
@@ -78,7 +78,7 @@ module.exports = {
                     } else {
                         let otherToken = await serverServices.getTokenById(decoded.userId);
                         if (otherToken) {
-                            res.status(401).json({ msg: 'other active session'});
+                            res.status(401).json({ msg: 'Outra sessão ativa!'});
                         } else {
                             res.status(401).end();
                         }
