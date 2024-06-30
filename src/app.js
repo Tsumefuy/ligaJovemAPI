@@ -22,7 +22,7 @@ const sslOptions = {
 const httpPort = 3000;
 
 // Porta HTTPS
-//const httpsPort = 443;
+const httpsPort = 443;
 
 const app = express();
 
@@ -68,10 +68,10 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-/* Servidor HTTPS
+Servidor HTTPS
 https.createServer(sslOptions, app).listen(httpsPort, () => {
   console.log(`Servidor HTTPS rodando na porta ${httpsPort}!`);
-})*/
+});
 
 // Servidor HTTP para redirecionamento (opcional)
 http.createServer((req, res) => {
