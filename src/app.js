@@ -14,10 +14,10 @@ var indexRouter = require('./api/routes/index');
 var usersRouter = require('./api/routes/users');
 
 // Porta HTTP (apenas para redirecionamento se necessário)
-const httpPort = 3000;
+const httpPort = 3001;
 
 // Porta HTTPS (usada pelo Nginx, não pelo Node.js diretamente)
-const httpsPort = 3443;
+const httpsPort = 8443;
 
 const app = express();
 
