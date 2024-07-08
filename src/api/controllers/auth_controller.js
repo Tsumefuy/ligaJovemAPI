@@ -40,8 +40,11 @@ module.exports.controller = (app) => {
     app.post('/api/login', async (req, res) => {
         let json;
         let token;
-
-        let { email, password } = req.body;
+        
+        let password = await serverServices.calculateHashAsync(req.body.password, '');
+        let email = req.body.email;
+        
+        console.log(password);
 
         if (email && password) {
             let user = await serverServices.getUserIdByEmail(email); 

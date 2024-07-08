@@ -20,7 +20,7 @@ var usersRouter = require('./api/routes/users');
 */
 
 // Porta HTTP (apenas para redirecionamento se necessário)
-const httpPort = process.env.PORT || 3000;
+const httpPort = process.env.PORT || 3001;
 
 // Porta HTTPS
 //const httpsPort = 443;
