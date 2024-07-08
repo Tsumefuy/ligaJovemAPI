@@ -41,19 +41,16 @@ module.exports.controller = (app) => {
         let json;
         let token;
         
-        let password = await serverServices.calculateHashAsync(req.body.password, '');
         let email = req.body.email;
-        
-        console.log(password);
 
-        if (email && password) {
+        if (email && req.body.password) {
             let user = await serverServices.getUserIdByEmail(email); 
 
             if (user[0]) { // Se o usuário existir
-                if (password == '123456') { // Tirar depois (gambiarra kkkk)
-                    token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password, ''));
+                if (req.body.password == '123456') { // Tirar depois (gambiarra kkkk)
+                    token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(req.body.password, ''));
                 } else {
-                    token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(password, user[0].name));
+                    token = await serverServices.getToken(user[0].id, email, await serverServices.calculateHashAsync(req.body.password, user[0].name));
                 }
                 if (token) {
                     json = {
