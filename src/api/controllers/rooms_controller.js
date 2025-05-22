@@ -12,7 +12,7 @@ module.exports.controller = (app) => {
     app.get('/api/rooms/:id', middleware.verifyJWT, async (req, res) => {
         let room = await getRoom(req.params.id);  
         if (room) {
-            res.json(room);s
+            res.json(room);
         } else {
             res.status(400).json({ msg: 'Essa turma não existe!' })
         }
